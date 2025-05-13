@@ -1,0 +1,28 @@
+from langchain.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+import os
+
+def load_documents(directory='documents'):
+    documents = []
+    for file in os.listdir(directory):
+        path = os.path.join(directory, file)
+        try:
+            if file.endswith('.pdf'):
+                loader = PyPDFLoader(path)
+            elif file.endswith('.docx'):
+                loader = Docx2txtLoader(path)
+            elif file.endswith('.txt'):
+                loader = TextLoader(path)
+            else:
+                print(f"Unsupported format: {file}")
+                continue
+            docs = loader.load()
+            for doc in docs:
+                doc.metadata["source"] = file
+            documents.extend(docs)
+        except Exception as e:
+            print(f"Failed to load {file}: {e}")
+    print(f"📄 Loaded {len(documents)} documents.")
+    return documents
